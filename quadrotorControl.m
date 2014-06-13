@@ -1,0 +1,23 @@
+function in=quadrotorControl(Xtrue,P,Xw,gyroOp)
+x=Xtrue(1);
+y=Xtrue(2);
+z=Xtrue(3);
+u = Xtrue(4);
+v = Xtrue(5);
+w = Xtrue(6);
+phi = Xtrue(7);
+theta = Xtrue(8);
+psi = Xtrue(9);
+Xwv1=Rv_v1(psi)*Xw;% body to vehicle
+pxd=Rb_v1(phi,theta)*[u;v;w];
+ux=PID_rollAngle(P.Waypoint.ki,P.Waypoint.kd,P.Waypoint.ki,x,Xwv1(1),P,pxd(1));
+uy=PID_rollAngle(P.Waypoint.ki,P.Waypoint.kd,P.Waypoint.ki,y,Xwv1(2),P,pxd(2));
+uz=PID_rollAngle(P.Waypoint.ki,P.Waypoint.kd,P.Waypoint.ki,z,Xwv1(3),P,pxd(3));% 0.6
+Fc=(P.g-uz)/(cos(phi)*cos(theta));
+theta_c=pi2_to_pi2(atan2(ux,uz-P.g));
+phi_c=pi2_to_pi2(atan2(uy*cos(theta_c),P.g-uz));
+in(1,1)=Fc;%(P.g-uz)/(cos(Xtrue(7))*cos(Xtrue(8)));
+in(2,1)=PID_rollAngle(P.Att.kp,P.Att.kd,P.Att.ki,Xtrue(7),phi_c,P,gyroOp(1));
+in(3,1)=PID_rollAngle(P.Att.kp,P.Att.kd,P.Att.ki,Xtrue(8),theta_c,P,gyroOp(2));
+in(4,1)=PID_rollAngle(P.Att.kp,P.Att.kd,P.Att.ki,Xtrue(9),0,P,gyroOp(3));
+
